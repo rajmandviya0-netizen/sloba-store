@@ -9,6 +9,13 @@ const Stripe = require('stripe');
 
 const STRIPE_SECRET_KEY = process.env.STRIPE_SECRET_KEY;
 
+// The deployed frontend's base URL, used to build Stripe's redirect URLs.
+// Set FRONTEND_URL in your .env (locally) or in your host's environment
+// variables (e.g. Render) to your real deployed site's address, e.g.
+// https://your-username.github.io/your-repo-name
+// Falls back to localhost for local development if not set.
+const FRONTEND_URL = process.env.FRONTEND_URL || 'http://localhost:4200';
+
 const stripe = Stripe(STRIPE_SECRET_KEY);
 const app = express();
 
@@ -27,7 +34,7 @@ app.post('/checkout', async (req, res) => {
       price_data: {
         currency: 'usd',
         product_data: { name: item.name },
-        unit_amount: Math.round(item.price * 100),
+        unit_amount: Math.round(item.price * 100), // Stripe expects cents
       },
       quantity: item.quantity,
     }));
@@ -36,8 +43,8 @@ app.post('/checkout', async (req, res) => {
       payment_method_types: ['card'],
       line_items,
       mode: 'payment',
-      success_url: 'http://localhost:4200/cart?success=true',
-      cancel_url: 'http://localhost:4200/cart?canceled=true',
+      success_url: `${FRONTEND_URL}/cart?success=true`,
+      cancel_url: `${FRONTEND_URL}/cart?canceled=true`,
     });
 
     res.json({ id: session.id });
@@ -47,7 +54,7 @@ app.post('/checkout', async (req, res) => {
   }
 });
 
-const PORT = 4242;
+const PORT = process.env.PORT || 4242;
 app.listen(PORT, () => {
-  console.log(`Checkout server running at http://localhost:${PORT}`);
+  console.log(`Checkout server running on port ${PORT}`);
 });
