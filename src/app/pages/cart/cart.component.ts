@@ -1,5 +1,6 @@
 import { HttpClient, HttpErrorResponse } from '@angular/common/http';
 import { Component, OnDestroy, OnInit } from '@angular/core';
+import { ActivatedRoute } from '@angular/router';
 import { MatSnackBar } from '@angular/material/snack-bar';
 import { Cart, CartItem } from 'src/app/models/cart.model';
 import { CartService } from 'src/app/services/cart.service';
@@ -35,7 +36,8 @@ export class CartComponent implements OnInit, OnDestroy {
   constructor(
     private cartService: CartService,
     private http: HttpClient,
-    private snackBar: MatSnackBar
+    private snackBar: MatSnackBar,
+    private route: ActivatedRoute
   ) {}
 
   ngOnInit(): void {
@@ -43,6 +45,17 @@ export class CartComponent implements OnInit, OnDestroy {
       this.cart = _cart;
       this.dataSource = _cart.items;
     });
+
+    // If we've just been redirected back here from a successful Stripe
+    // Checkout session (?success=true), the payment went through — clear
+    // the cart so the user doesn't see items they already paid for.
+    const success = this.route.snapshot.queryParamMap.get('success');
+    if (success === 'true') {
+      this.cartService.clearCart();
+      this.snackBar.open('Payment successful! Thank you for your order.', 'Ok', {
+        duration: 4000,
+      });
+    }
   }
 
   getTotal(items: CartItem[]): number {
