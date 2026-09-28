@@ -14,6 +14,7 @@ export class HomeComponent implements OnInit, OnDestroy {
   cols = 3;
   rowHeight: number = ROWS_HEIGHT[this.cols];
   products: Array<Product> | undefined;
+  allProducts: Array<Product> = [];
   count = '12';
   sort = 'desc';
   category: string | undefined;
@@ -25,7 +26,7 @@ export class HomeComponent implements OnInit, OnDestroy {
   ) {}
 
   ngOnInit(): void {
-    this.getProducts();
+    this.loadProducts();
   }
 
   onColumnsCountChange(colsNum: number): void {
@@ -35,25 +36,39 @@ export class HomeComponent implements OnInit, OnDestroy {
 
   onItemsCountChange(count: number): void {
     this.count = count.toString();
-    this.getProducts();
+    this.applyFilters();
   }
 
   onSortChange(newSort: string): void {
     this.sort = newSort;
-    this.getProducts();
+    this.applyFilters();
   }
 
   onShowCategory(newCategory: string): void {
     this.category = newCategory;
-    this.getProducts();
+    this.applyFilters();
   }
 
-  getProducts(): void {
+  // One network request, only on first load
+  loadProducts(): void {
     this.productsSubscription = this.storeService
-      .getAllProducts(this.count, this.sort, this.category)
+      .getAllProducts('100', 'asc')
       .subscribe((_products) => {
-        this.products = _products;
+        this.allProducts = _products;
+        this.applyFilters();
       });
+  }
+
+  // Instant: works on the array already in memory
+  applyFilters(): void {
+    const filtered = this.allProducts
+      .filter((p) => !this.category || p.category === this.category)
+      .sort((a, b) => (this.sort === 'desc' ? b.id - a.id : a.id - b.id));
+    this.products = filtered.slice(0, Number(this.count));
+  }
+
+  trackById(index: number, product: Product): number {
+    return product.id;
   }
 
   onAddToCart(product: Product): void {

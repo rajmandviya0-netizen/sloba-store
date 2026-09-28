@@ -17,7 +17,7 @@
       [cols]="cols"
       [rowHeight]="rowHeight"
     >
-      <mat-grid-tile *ngFor="let product of products">
+      <mat-grid-tile *ngFor="let product of products; trackBy: trackById">
         <div
           (addToCart)="onAddToCart($event)"
           app-product-box

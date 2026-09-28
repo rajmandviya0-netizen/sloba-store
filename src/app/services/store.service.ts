@@ -1,30 +1,62 @@
 import { HttpClient } from '@angular/common/http';
 import { Injectable } from '@angular/core';
 import { Observable } from 'rxjs';
+import { map, shareReplay } from 'rxjs/operators';
 import { Product } from '../models/product.model';
-import { environment } from 'src/environments/environment';
+
+const API_URL = 'https://dummyjson.com';
 
 @Injectable({
   providedIn: 'root',
 })
 export class StoreService {
+  private products$?: Observable<Array<Product>>;
+  private categories$?: Observable<Array<string>>;
+
   constructor(private httpClient: HttpClient) {}
 
+  // Loads the list once and reuses it, so repeat calls are instant.
   getAllProducts(
-    limit = '12',
+    limit = '100',
     sort = 'desc',
     category?: string
   ): Observable<Array<Product>> {
-    return this.httpClient.get<Array<Product>>(
-      `${environment.storeApiBaseUrl}/products${
-        category ? '/category/' + category : ''
-      }?sort=${sort}&limit=${limit}`
-    );
+    if (!this.products$) {
+      this.products$ = this.httpClient
+        .get<{ products: any[] }>(
+          `${API_URL}/products?limit=100&select=id,title,description,category,price,thumbnail`
+        )
+        .pipe(
+          map((res) =>
+            res.products.map(
+              (p) =>
+                ({
+                  id: p.id,
+                  title: p.title,
+                  description: p.description,
+                  category: p.category,
+                  price: p.price,
+                  image: p.thumbnail,
+                } as Product)
+            )
+          ),
+          shareReplay(1)
+        );
+    }
+    return this.products$;
   }
 
   getAllCategories(): Observable<Array<string>> {
-    return this.httpClient.get<Array<string>>(
-      `${environment.storeApiBaseUrl}/products/categories`
-    );
+    if (!this.categories$) {
+      this.categories$ = this.httpClient
+        .get<any[]>(`${API_URL}/products/categories`)
+        .pipe(
+          map((list) =>
+            list.map((c) => (typeof c === 'string' ? c : c.slug))
+          ),
+          shareReplay(1)
+        );
+    }
+    return this.categories$;
   }
 }
