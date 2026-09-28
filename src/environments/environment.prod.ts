@@ -4,8 +4,7 @@
 export const environment = {
   production: true,
 
-  // Replace with your production API URLs before deploying.
-  storeApiBaseUrl: 'https://fakestoreapi.com',
-  checkoutApiUrl: 'https://your-real-backend.example.com/checkout',
-  stripePublishableKey: 'pk_live_REPLACE_WITH_YOUR_STRIPE_PUBLISHABLE_KEY',
+  storeApiBaseUrl: 'https://dummyjson.com',
+  checkoutApiUrl: 'https://sloba-store.onrender.com/checkout',
+  stripePublishableKey: 'pk_test_PASTE_YOUR_TEST_PUBLISHABLE_KEY_HERE',
 };
