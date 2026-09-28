@@ -6,5 +6,5 @@ export const environment = {
 
   storeApiBaseUrl: 'https://dummyjson.com',
   checkoutApiUrl: 'https://sloba-store.onrender.com/checkout',
-  stripePublishableKey: 'pk_test_PASTE_YOUR_TEST_PUBLISHABLE_KEY_HERE',
+  stripePublishableKey: 'pk_test_PASTE_YOUR_KEY_HERE',
 };
